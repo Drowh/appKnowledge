@@ -166,32 +166,32 @@ function renderQuestion() {
         // Теперь добавим кнопки с ответами в answersContainer
         questionData.answers.forEach((answer, index) => {
             // Создаем кнопку для каждого ответа
-            const answerButton = document.createElement('button'); 
+            const answerButton = document.createElement('button');
             // Устанавливаем текст ответа в кнопку
-            answerButton.textContent = answer; 
+            answerButton.textContent = answer;
             // Присваиваем класс 'button' для стилей
-            answerButton.classList.add('button'); 
-// заранее прописал обработчик для правильности ответа через будущую функцию checkAnswer
+            answerButton.classList.add('button');
+            // заранее прописал обработчик для правильности ответа через будущую функцию checkAnswer
             answerButton.addEventListener('click', () => checkAnswer(index === questionData.correct, answerButton));
             // Добавляем кнопку в контейнер ответов
-            answersContainer.appendChild(answerButton); 
+            answersContainer.appendChild(answerButton);
         });
         // Добавляем контейнер ответов в основной контейнер
         container.appendChild(answersContainer);
-         
+
         // Добавление текстового поля для вопросов с input и кнопку принятия ответа
-    }  else if (questionData.type === 'input') {
+    } else if (questionData.type === 'input') {
         // Создаем элемент <input>
         const answerInput = document.createElement('input');
         // Задаем тип input как текстовый (text) 
-        answerInput.type = 'text'; 
+        answerInput.type = 'text';
         // Добавляем подсказку для пользователя
         answerInput.placeholder = 'Введите ответ...';
         // Добавляем класс 'button' для применения стилей 
-        answerInput.classList.add('button'); 
-    
+        answerInput.classList.add('button');
 
-}
+
+    }
 
 
 }
