@@ -55,61 +55,7 @@ const quizData = [
         type: "choice",
         correct: 2
     },
-    {
-        question: "6. Что такое 'замыкание' (closure) в JavaScript?",
-        answers: [
-            "Объект, содержащий методы для работы с массивами",
-            "Функция, которая всегда возвращает другую функцию",
-            "Функция с доступом к переменным из родительской области видимости",
-            "Способ обработки асинхронных запросов"
-        ],
-        type: "choice",
-        correct: 2
-    },
-    {
-        question: "7. Какой будет результат выполнения `0.1 + 0.2 === 0.3`?",
-        answers: [
-            "true",
-            "false",
-            "true,",
-            "false,"
-        ],
-        type: "input",
-        correctAnswer: "false"
-    },
-    {
-        question: "8. Что такое промис (Promise) в JavaScript и для чего он используется?",
-        answers: [
-            "Метод сортировки массивов",
-            "Объект, представляющий успешное завершение или ошибку асинхронной операции",
-            "Способ управления видимостью переменных",
-            "Синтаксический сахар для работы с коллбэками"
-        ],
-        type: "choice",
-        correct: 1
-    },
-    {
-        question: "9. Для чего используется метод `Array.prototype.map()`?",
-        answers: [
-            "Для изменения строк",
-            "Для выполнения математических вычислений",
-            "Для создания нового массива с результатами вызова функции на каждом элементе массива",
-            "Для фильтрации массива по условию"
-        ],
-        type: "choice",
-        correct: 2
-    },
-    {
-        question: "10. Что возвращает функция `Array.prototype.filter()`?",
-        answers: [
-            "Новую строку с отфильтрованными элементами",
-            "Булевое значение на основе условия",
-            "Массив индексов соответствующих элементов",
-            "Новый массив с элементами, прошедшими тестовое условие"
-        ],
-        type: "choice",
-        correct: 3
-    }
+
 ];
 
 
@@ -134,6 +80,41 @@ const resultContainer = document.querySelector('.result');
 const resetButton = document.querySelector('.reset-button');
 
 
+// Создаем и настраиваем элементы полоски прогресса
+const progressBarContainer = document.createElement('div');
+const progressBar = document.createElement('div');
+
+progressBarContainer.classList.add('progress-bar-container');
+progressBar.classList.add('progress-bar');
+
+progressBarContainer.appendChild(progressBar);
+container.insertBefore(progressBarContainer, resultContainer);
+
+// Функция обновления прогресс-бара
+function updateProgressBar() {
+    const progress = ((currentQuestionIndex / quizData.length) * 100).toFixed(2);
+    progressBar.style.width = `${progress}%`;
+}
+
+// Функция для начала теста
+function startTest() {
+    container.innerHTML = '';
+
+    const textContainer = document.createElement('div');
+    textContainer.classList.add('text-container');
+
+    const titleParts = ["ТЕСТ", "НА", "ЗНАНИЯ", "JavaScript"];
+    titleParts.forEach(part => {
+        const span = document.createElement('span');
+        span.textContent = part;
+        textContainer.appendChild(span);
+    });
+
+    container.appendChild(textContainer);
+    container.appendChild(startButton);
+    startButton.style.display = 'block';
+}
+
 // Запускаем тест при нажатии на кнопку "Начать тест"
 startButton.addEventListener('click', () => {
     // скрываем кнопку начать тест
@@ -148,6 +129,10 @@ function renderQuestion() {
     const questionData = quizData[currentQuestionIndex];
     // Очищаем контейнер перед добавлением нового вопроса
     container.innerHTML = '';
+
+    container.appendChild(progressBarContainer);
+    updateProgressBar();
+    
     // Создаем элемент <label>
     const questionLabel = document.createElement('label');
     // Устанавливаем текст вопроса в <label>
@@ -181,18 +166,94 @@ function renderQuestion() {
 
         // Добавление текстового поля для вопросов с input и кнопку принятия ответа
     } else if (questionData.type === 'input') {
-        // Создаем элемент <input>
         const answerInput = document.createElement('input');
-        // Задаем тип input как текстовый (text) 
         answerInput.type = 'text';
-        // Добавляем подсказку для пользователя
         answerInput.placeholder = 'Введите ответ...';
         // Добавляем класс 'button' для применения стилей 
         answerInput.classList.add('button');
 
+        // Создаем кнопку для отправки ответа
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Ответить';
+        submitButton.classList.add('button');
+        submitButton.addEventListener('click', () => checkAnswer(
+            answerInput.value.trim().toLowerCase() === questionData.correctAnswer.toLowerCase(), answerInput
+        ));
 
+        container.appendChild(answerInput);
+        container.appendChild(submitButton);
+    }
+}
+
+// Функция для отключения всех кнопок и инпутов
+function disableInputs() {
+    document.querySelectorAll('button').forEach(button => button.disabled = true);
+    document.querySelectorAll('input').forEach(input => input.readOnly = true);
+}
+
+// Функция для включения всех кнопок и инпутов
+function enableInputs() {
+    document.querySelectorAll('button').forEach(button => button.disabled = false);
+    document.querySelectorAll('input').forEach(input => input.readOnly = false);
+}
+
+// Функция для проверки ответа
+function checkAnswer(isCorrect, element) {
+    disableInputs() // Отключить элементы, чтобы пользователь не мог взаимодействовать
+
+    // Удаляем стили правильного/неправильного ответа с каждой кнопки перед добавлением новых
+    document.querySelectorAll('.button').forEach(button => button.classList.remove('correct', 'incorrect'));
+    //Проверка правильности и подсветка ответа
+    if (isCorrect) { // Если ответ правильный
+        element.classList.add('correct'); // Подсвечиваем ответ зелёным
+        score++; // Увеличиваем счетчик правильных ответов
+    } else { // Если ответ неверный
+        element.classList.add('incorrect'); // Подсвечиваем ответ красным
     }
 
-
+    //Переход к следующему вопросу через задержку, сделал для того, чтобы пользователь успел увидеть правильно или не правильно ответил
+    setTimeout(() => {
+        enableInputs(); // Включить элементы после задержки
+        
+        // Переходим к следующему вопросу, увеличив индекс на 1
+        currentQuestionIndex++; 
+        // Проверяем, есть ли еще вопросы
+        if (currentQuestionIndex < quizData.length) { 
+            // Если вопросы остались, вызываем renderQuestion для отображения следующего
+            renderQuestion();
+            
+        } else { // Если вопросов больше нет
+            showResult(); // Показываем итоговый результат
+        }
+    }, 2000); // Переход через 2 секунды
 }
+
+
+// Функция отображения результата
+function showResult() {
+    container.innerHTML = ''; 
+    container.appendChild(resultContainer); 
+    container.appendChild(resetButton); 
+
+    // Рассчитываем процент и округляем до двух знаков после запятой
+    const percentage = ((score / quizData.length) * 100).toFixed(2);
+    // Устанавливаем текст результата с процентом 
+    resultContainer.textContent = `Ваш результат: ${score} из ${quizData.length} правильных ответов (${percentage}%)`; 
+
+    // Делаем контейнер с результатом видимым и ресет кнопку
+    resultContainer.style.display = 'block'; 
+    resetButton.style.display = 'block'; 
+}
+
+// Функция для перезапуска теста
+resetButton.addEventListener('click', () => {
+    currentQuestionIndex = 0; // Сбрасываем индекс текущего вопроса на 0
+    score = 0; // Сбрасываем счетчик правильных ответов
+    resultContainer.style.display = 'none'; // Скрываем контейнер с результатом
+    resetButton.style.display = 'none'; // Скрываем кнопку перезапуска
+    startButton.style.display = 'block'; // Показываем кнопку "Начать тест" для повторного запуска
+    startTest()
+});
+startTest()
+
 
